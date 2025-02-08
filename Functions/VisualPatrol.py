@@ -14,7 +14,7 @@ import hiwonder.ros_robot_controller_sdk as rrc
 from hiwonder.Controller import Controller
 import hiwonder.ActionGroupControl as AGC
 import hiwonder.yaml_handle as yaml_handle
-
+from hiwonder.common import ColorPicker
 
 '''
     程序功能：视觉巡线(program function: vision line following)
@@ -29,26 +29,17 @@ if sys.version_info.major == 2:
     print('Please run this program with python3!')
     sys.exit(0)
 
-__target_color = ('black')
-
-# 设置检测颜色(set detected color)
-def setLineTargetColor(target_color):
-    global __target_color
-
-    __target_color = target_color
-    return (True, (), 'SetVisualPatrolColor')
+target_color = []
 
 board = rrc.Board()
 ctl = Controller(board)
 
-lab_data = None
 servo_data = None
 
 # 加载配置文件数据(load configuration file data)
 def load_config():
-    global lab_data, servo_data
+    global servo_data
     
-    lab_data = yaml_handle.get_yaml_data(yaml_handle.lab_file_path)
     servo_data = yaml_handle.get_yaml_data(yaml_handle.servo_file_path)
 
 load_config()
@@ -63,37 +54,62 @@ line_center_x = -1
 # 变量重置(variable reset)
 def reset():
     global line_center_x
-    global __target_color
+    global target_color
+    global color_picker
     
     line_center_x = -1
-    __target_color = ()
+    target_color = []
+    color_picker = None
 
 # app初始化调用(app initialization calling)
 def init():
+    global enter
     print("VisualPatrol Init")
     load_config()
     initMove()
+    enter = True
 
-__isRunning = False
+enter = False
+running = False
 # app开始玩法调用(app start program calling)
 def start():
-    global __isRunning
-    reset()
-    __isRunning = True
+    global running
+    running = True
     print("VisualPatrol Start")
 
 # app停止玩法调用(app stop program calling)
 def stop():
-    global __isRunning
-    __isRunning = False
+    global running
+    running = False
+    reset()
     print("VisualPatrol Stop")
 
 # app退出玩法调用(app exit program calling)
 def exit():
-    global __isRunning
-    __isRunning = False
-    AGC.runActionGroup('stand_low')
+    global enter, running
+    enter = False
+    running = False
+    reset()
+    AGC.runActionGroup('stand_slow')
     print("VisualPatrol Exit")
+
+color_picker = None
+def set_point(point):
+    global color_picker, target_color
+    x, y = point
+    target_color = []
+    color_picker = ColorPicker([x, y], 20)
+
+def get_rgb_value():
+    if target_color:
+        return target_color[1] 
+    else:
+        return []
+
+threshold = 0.3
+def set_threshold(value):
+    global threshold
+    threshold = value
 
 # 找出面积最大的轮廓(find out the contour with the maximal area)
 # 参数为要比较的轮廓的列表(parameter is the list of contour to be compared)
@@ -116,7 +132,7 @@ def move():
     global line_center_x
     
     while True:
-        if __isRunning:
+        if enter:
             if line_center_x != -1:
                 if abs(line_center_x - img_centerx) <= 50:
                     AGC.runActionGroup('go_forward')
@@ -127,7 +143,7 @@ def move():
             else:
                 time.sleep(0.01)
         else:
-            time.sleep(0.01)
+            time.sleep(0.1)
 
 # 运行子线程(run sub-thread)
 th = threading.Thread(target=move)
@@ -147,82 +163,95 @@ roi_h3 = roi[2][0] - roi[1][0]
 roi_h_list = [roi_h1, roi_h2, roi_h3]
 
 size = (640, 480)
+img_w, img_h = None, None
 def run(img):
     global line_center_x
-    global __target_color
+    global target_color
+    global img_w, img_h
+    global color_picker
     
-    img_copy = img.copy()
+    display_image = img.copy()
     img_h, img_w = img.shape[:2]
     
-    
-    if not __isRunning or __target_color == ():
-        return img
-    
-    frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
-    frame_gb = cv2.GaussianBlur(frame_resize, (3, 3), 3)   
-            
-    centroid_x_sum = 0
-    weight_sum = 0
-    center_ = []
-    n = 0
-
-    #将图像分割成上中下三个部分，这样处理速度会更快，更精确(divide the image into three parts: top, middle, and bottom. This will result in faster and more accurate processing)
-    for r in roi:
-        roi_h = roi_h_list[n]
-        n += 1       
-        blobs = frame_gb[r[0]:r[1], r[2]:r[3]]
-        frame_lab = cv2.cvtColor(blobs, cv2.COLOR_BGR2LAB)  # 将图像转换到LAB空间(convert the image to LAB space)
-        
-        for i in lab_data:
-            if i in __target_color:
-                detect_color = i
-                frame_mask = cv2.inRange(frame_lab,
-                                         (lab_data[i]['min'][0],
-                                          lab_data[i]['min'][1],
-                                          lab_data[i]['min'][2]),
-                                         (lab_data[i]['max'][0],
-                                          lab_data[i]['max'][1],
-                                          lab_data[i]['max'][2]))  #对原图像和掩模进行位运算(perform bitwise operation to original image and mask)
-                eroded = cv2.erode(frame_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))  #腐蚀(corrosion)
-                dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) #膨胀(dilation)
-        dilated[:, 0:160] = 0
-        dilated[:, 480:640] = 0        
-        cnts = cv2.findContours(dilated , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)[-2]#找出所有轮廓(find out all contours)
-        cnt_large, area = getAreaMaxContour(cnts)#找到最大面积的轮廓(find out the contour with the maximal area)
-        if cnt_large is not None:#如果轮廓不为空(if contour is not NONE)
-            rect = cv2.minAreaRect(cnt_large)#最小外接矩形(the minimum bounding rectangle)
-            box = np.int0(cv2.boxPoints(rect))#最小外接矩形的四个顶点(the four vertices of the minimum bounding rectangle)
-            for i in range(4):
-                box[i, 1] = box[i, 1] + (n - 1)*roi_h + roi[0][0]
-                box[i, 1] = int(Misc.map(box[i, 1], 0, size[1], 0, img_h))
-            for i in range(4):                
-                box[i, 0] = int(Misc.map(box[i, 0], 0, size[0], 0, img_w))
+    if not enter:
+        return display_image
+    if color_picker is not None and not target_color:  
+        target_color, display_image = color_picker(img, display_image)
+        if target_color:
+            color_picker = None
+    elif target_color:    
+        frame_resize = cv2.resize(img, size, interpolation=cv2.INTER_NEAREST)
+        frame_gb = cv2.GaussianBlur(frame_resize, (3, 3), 3)   
                 
-            cv2.drawContours(img, [box], -1, (0,0,255,255), 2)#画出四个点组成的矩形(draw the rectangle formed by four points)
-            
-            #获取矩形的对角点(get the diagonal points of the rectangle)
-            pt1_x, pt1_y = box[0, 0], box[0, 1]
-            pt3_x, pt3_y = box[2, 0], box[2, 1]            
-            center_x, center_y = (pt1_x + pt3_x) / 2, (pt1_y + pt3_y) / 2#中心点(center point)
-            cv2.circle(img, (int(center_x), int(center_y)), 5, (0,0,255), -1)#画出中心点(draw center point)
-            
-            center_.append([center_x, center_y])                        
-            #按权重不同对上中下三个中心点进行求和(sum the three central points of the top, middle, and bottom sections according to different weights)
-            centroid_x_sum += center_x * r[4]
-            weight_sum += r[4]
+        centroid_x_sum = 0
+        weight_sum = 0
+        center_ = []
+        n = 0
 
-    if weight_sum != 0:
-        #求最终得到的中心点(seeking the final obtained center point)
-        cv2.circle(img, (line_center_x, int(center_y)), 10, (0,255,255), -1)#画出中心点(draw center point)
-        line_center_x = int(centroid_x_sum / weight_sum)  
-    else:
-        line_center_x = -1
+        #将图像分割成上中下三个部分，这样处理速度会更快，更精确(divide the image into three parts: top, middle, and bottom. This will result in faster and more accurate processing)
+        for r in roi:
+            roi_h = roi_h_list[n]
+            n += 1       
+            blobs = frame_gb[r[0]:r[1], r[2]:r[3]]
+            frame_lab = cv2.cvtColor(blobs, cv2.COLOR_BGR2LAB)  # 将图像转换到LAB空间(convert the image to LAB space)
+            
+            min_color = [int(target_color[0][0] - 50 * threshold * 2),
+                         int(target_color[0][1] - 50 * threshold),
+                         int(target_color[0][2] - 50 * threshold)]
+            max_color = [int(target_color[0][0] + 50 * threshold * 2),
+                         int(target_color[0][1] + 50 * threshold),
+                         int(target_color[0][2] + 50 * threshold)]
+            #对原图像和掩模进行位运算(perform bitwise operation to the original image and mask)
+            frame_mask = cv2.inRange(frame_lab, tuple(min_color), tuple(max_color))
+            eroded = cv2.erode(frame_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))  #腐蚀(corrosion)
+            dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) #膨胀(dilation)
+            dilated[:, 0:160] = 0
+            dilated[:, 480:640] = 0        
+            cnts = cv2.findContours(dilated , cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)[-2]#找出所有轮廓(find out all contours)
+            cnt_large, area = getAreaMaxContour(cnts)#找到最大面积的轮廓(find out the contour with the maximal area)
+            if cnt_large is not None:#如果轮廓不为空(if contour is not NONE)
+                rect = cv2.minAreaRect(cnt_large)#最小外接矩形(the minimum bounding rectangle)
+                box = np.int0(cv2.boxPoints(rect))#最小外接矩形的四个顶点(the four vertices of the minimum bounding rectangle)
+                for i in range(4):
+                    box[i, 1] = box[i, 1] + (n - 1)*roi_h + roi[0][0]
+                    box[i, 1] = int(Misc.map(box[i, 1], 0, size[1], 0, img_h))
+                for i in range(4):                
+                    box[i, 0] = int(Misc.map(box[i, 0], 0, size[0], 0, img_w))
+                    
+                cv2.drawContours(display_image, [box], -1, (0,0,255,255), 2)#画出四个点组成的矩形(draw the rectangle formed by four points)
+                
+                #获取矩形的对角点(get the diagonal points of the rectangle)
+                pt1_x, pt1_y = box[0, 0], box[0, 1]
+                pt3_x, pt3_y = box[2, 0], box[2, 1]            
+                center_x, center_y = (pt1_x + pt3_x) / 2, (pt1_y + pt3_y) / 2#中心点(center point)
+                cv2.circle(display_image, (int(center_x), int(center_y)), 5, (0,0,255), -1)#画出中心点(draw center point)
+                
+                center_.append([center_x, center_y])                        
+                #按权重不同对上中下三个中心点进行求和(sum the three central points of the top, middle, and bottom sections according to different weights)
+                centroid_x_sum += center_x * r[4]
+                weight_sum += r[4]
 
-    return img
+        if weight_sum != 0:
+            #求最终得到的中心点(seeking the final obtained center point)
+            cv2.circle(display_image, (line_center_x, int(center_y)), 10, (0,255,255), -1)#画出中心点(draw center point)
+            if running:
+                line_center_x = int(centroid_x_sum / weight_sum)  
+        else:
+            line_center_x = -1
+
+    return display_image
 
 if __name__ == '__main__':
     from CameraCalibration.CalibrationConfig import *
-    
+    def mouse_callback(event, x, y, flags, param):
+        global color_picker
+        if event == cv2.EVENT_LBUTTONDOWN:
+            color_picker = ColorPicker([x/img_w, y/img_h], 20)
+            # print(x, y)
+        elif event == cv2.EVENT_RBUTTONDOWN:
+            color_picker = None
+            init()
+            reset()     
     #加载参数(load parameters)
     param_data = np.load(calibration_param_path + '.npz')
 
@@ -234,7 +263,6 @@ if __name__ == '__main__':
     
     init()
     start()
-    __target_color = ('black')
     
     open_once = yaml_handle.get_yaml_data('/boot/camera_setting.yaml')['open_once']
     if open_once:
@@ -250,7 +278,8 @@ if __name__ == '__main__':
             frame = img.copy()
             frame = cv2.remap(frame, mapx, mapy, cv2.INTER_LINEAR)  # 畸变矫正(distortion correction)
             Frame = run(frame)           
-            cv2.imshow('Frame', Frame)
+            cv2.imshow('result_image', Frame)
+            cv2.setMouseCallback("result_image", mouse_callback)
             key = cv2.waitKey(1)
             if key == 27:
                 break

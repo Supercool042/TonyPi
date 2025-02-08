@@ -13,6 +13,7 @@ import Functions.ColorDetect as ColorDetect
 import Functions.VisualPatrol as VisualPatrol
 import Functions.RemoteControl as RemoteControl
 import Functions.ApriltagDetect as ApriltagDetect
+import Functions.gesture_control as GestureControl 
 import Extend.athletics_course.hurdles as Hurdles
 import Extend.athletics_course.stairway as Stairway
 import Extend.vision_grab_course.color_classify as ColorClassify
@@ -25,7 +26,7 @@ open_once = False
 FUNCTIONS = {
     1: RemoteControl, # 机体控制(remote control)
     2: KickBall,      # 自动踢球(auto shooting)
-    3: ColorDetect,   # 颜色识别(color recognition)
+    3: GestureControl,# 颜色识别(color recognition)
     4: VisualPatrol,  # 智能巡线 (intelligent line follow)
     5: ColorTrack,    # 云台跟踪(pan-tilt tracking)
     6: FaceDetect,    # 人脸识别(face recognition)

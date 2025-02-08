@@ -15,7 +15,7 @@ import hiwonder.ros_robot_controller_sdk as rrc
 from hiwonder.Controller import Controller
 import hiwonder.ActionGroupControl as AGC
 import hiwonder.yaml_handle as yaml_handle
-
+from hiwonder.common import ColorPicker
 
 
 '''
@@ -50,14 +50,6 @@ dist = param_data['dist_array']
 newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (640, 480), 0, (640, 480))
 mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (640, 480), 5)
 
-range_rgb = {
-    'red': (0, 0, 255),
-    'blue': (255, 0, 0),
-    'green': (0, 255, 0),
-    'black': (0, 0, 0),
-    'white': (255, 255, 255),
-}
-
 # 找出面积最大的轮廓(find out the contour with the maximal area)
 # 参数为要比较的轮廓的列表(parameter is the list of contour to be compared)
 def getAreaMaxContour(contours):
@@ -69,7 +61,7 @@ def getAreaMaxContour(contours):
         contour_area_temp = math.fabs(cv2.contourArea(c))  # 计算轮廓面积(calculate contour area)
         if contour_area_temp > contour_area_max:
             contour_area_max = contour_area_temp
-            if 1000 > contour_area_temp > 2:  # 只有在面积大于300时，最大面积的轮廓才是有效的，以过滤干扰(only contours with an area greater than 300 are considered valid; the contour with the largest area is used to filter out interference)
+            if 640*480/100 > contour_area_temp > 2:  # 只有在面积大于300时，最大面积的轮廓才是有效的，以过滤干扰(only contours with an area greater than 300 are considered valid; the contour with the largest area is used to filter out interference)
                 areaMaxContour = c
 
     return areaMaxContour, contour_area_max  # 返回最大的轮廓(return the contour with the maximal area)
@@ -77,25 +69,15 @@ def getAreaMaxContour(contours):
 board = rrc.Board()
 ctl = Controller(board)
 
-# 设置需要检测的球的颜色，默认为红色(set the color of the ball to be detected, defaulting to red)
-__target_color = ('red')
-
-# 设置球的目标颜色(set the target color of the ball)
-def setBallTargetColor(target_color):
-    global __target_color
-
-    __target_color = target_color
-    return (True, (), 'SetBallColor')
+target_color = []
 
 # 颜色阈值数据和头部舵机位置数据(color threshold data and head servo position data)
-lab_data = None
 servo_data = None
 
 # 加载配置文件数据(load configuration file data)
 def load_config():
-    global lab_data, servo_data
+    global servo_data
     
-    lab_data = yaml_handle.get_yaml_data(yaml_handle.lab_file_path)
     servo_data = yaml_handle.get_yaml_data(yaml_handle.servo_file_path)                                
 
 load_config()
@@ -143,8 +125,9 @@ def reset():
     global start_count
     global step, step_
     global x_dis, y_dis
-    global __target_color
+    global target_color
     global CenterX, CenterY
+    global color_picker
 
     t1 = 0
     d_x = 20
@@ -157,39 +140,65 @@ def reset():
     y_dis = servo_data['servo1']
     last_status = ''
     start_count= True
-    __target_color = ()
+    target_color = []
     CenterX, CenterY = -2, -2
-
+    color_picker = None
     
 # app初始化调用(app initialization calling)
 def init():
-    print("kick_ball Init")
+    global enter
+    print("kick_ball Init") 
+    enter = True
     load_config()
     initMove()
 
 # 机器人是否运行的标志量(the flag variable indicating whether the robot is running)
-__isRunning = False
-
+enter = False
+running = False
 # app开始玩法调用(app start program calling)
 def start():
-    global __isRunning
-    reset()
-    __isRunning = True
+    global running 
+    running = True
     print("KickBall Start")
 
 # app停止玩法调用(app stop program calling)
 def stop():
-    global __isRunning
-    __isRunning = False
+    global running 
+    
+    reset()
+    running = False
     print("KickBall Stop")
 
 # app退出玩法调用(app exit program calling)
 def exit():
-    global __isRunning
-    __isRunning = False
+    global enter, running
+    enter = False
+    running = False
+    reset()
     AGC.runActionGroup('stand_slow')
     print("KickBall Exit")
 
+color_picker = None
+def set_point(point):
+    global color_picker, target_color
+    x, y = point
+    target_color = []
+    color_picker = ColorPicker([x, y], 20)
+
+    return (True, (), 'set_point') 
+
+def get_rgb_value():
+    if target_color:
+        return target_color[1]
+    else:
+        return []
+
+threshold = 0.3
+def set_threshold(value):
+    global threshold
+    threshold = value
+    print(1111, threshold)
+    return (True, (), 'set_threshold')
 
 # 图像中心横坐标(the horizontal coordinate of the image center)
 CENTER_X = 320
@@ -205,14 +214,13 @@ def move():
     global y_dis     
     global last_status            
     global start_count           
-    global __isRunning             
+    global enter             
     
     while True:
         if debug:      # 如果 debug 模式打开，则直接返回不执行后面的操作(if the debug mode is enabled, return directly without executing the subsequent operations)
             return
-        if __isRunning:
-           
-            if CenterX >= 0:      # 如果检测到了球(if the ball is detected)
+        if enter and running:
+            if CenterX >= 0 :      # 如果检测到了球(if the ball is detected)
                 step_ = 1                      
                 d_x, d_y = 20, 20
                 start_count= True            # 开始计时标志置为True，在后面找不到球的情况下使用(the flag for starting the timer is set to True, to be used when the ball is not found later on)
@@ -344,7 +352,7 @@ def move():
             else:
                 time.sleep(0.01)
         else:
-            time.sleep(0.01)
+            time.sleep(0.1)
 
 #启动动作的线程(start the thread of executing action)
 th = threading.Thread(target=move)
@@ -353,127 +361,141 @@ th.start()
 
 size = (320, 240)
 
+imgw, img_h = None, None
 def run(img):
     global x_dis, y_dis
     global CenterX, CenterY
     global last_status
+    global target_color
+    global img_w, img_h
+    global color_picker
 
-    img_copy = img.copy()
+    display_image = img.copy()
     img_h, img_w = img.shape[:2]    # 获取图像高度和宽度(get the height and width of the image)
-
-    if not __isRunning or __target_color == ():
+    
+    if not enter:
         # 如果robot_is_running不为True或者没有设置球的颜色(if robot_is_running is not True or the ball color is not set)
         if debug:
             # 在调试模式下输出参考线(in debug mode, output reference lines)
-            cv2.line(img, (0, 450), (img_w, 450), (0, 255, 255), 2)
-            cv2.line(img, (0, 380), (img_w, 380), (0, 255, 255), 2)
-            cv2.line(img, (0, 300), (img_w, 300), (0, 255, 255), 2)
-        return img
-    
-    # 重新调整图像大小(resize the image)
-    frame_resize = cv2.resize(img_copy, size, interpolation=cv2.INTER_NEAREST)
-    # 高斯模糊(Gaussian blur)
-    frame_gb = cv2.GaussianBlur(frame_resize, (3, 3), 3)
-    # 将图像转换到LAB色彩空间(convert the image to LAB color space)
-    frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  
-    
-    area_max = 0
-    areaMaxContour = 0
-    for i in lab_data:
-        if i in __target_color:
-            detect_color = i
-            #对原图像和掩模进行位运算(perform bitwise operation to the original image and mask)
-            frame_mask = cv2.inRange(frame_lab,
-                                         (lab_data[i]['min'][0],
-                                          lab_data[i]['min'][1],
-                                          lab_data[i]['min'][2]),
-                                         (lab_data[i]['max'][0],
-                                          lab_data[i]['max'][1],
-                                          lab_data[i]['max'][2]))  
-            #腐蚀(corrosion)
-            eroded = cv2.erode(frame_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))  
-            #膨胀(dilation)
-            dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) 
-            if debug:
-                # 在调试模式下显示掩模(display mask in the debug mode)
-                cv2.imshow(i, dilated)
-            contours = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  # 找出轮廓(find out contour)
-            # 找出设定范围内的最大轮廓，返回轮廓和轮廓的面积(find the largest contour within the specified range and return the contour and its area)
-            areaMaxContour, area_max = getAreaMaxContour(contours)  
-    if area_max:  # 如果找到最大面积的轮廓(if the contour with the maximal area is found)
-        try:
-            (CenterX, CenterY), radius = cv2.minEnclosingCircle(areaMaxContour) #获取最小外接圆(get the minimum circumcircle)
-        except:
-            img = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)  # 畸变矫正(distortion correction)
-            return img
-        # 将球的中心坐标和半径映射回原始图像尺寸(map the center coordinates and radius of the ball back to the original image size)
-        CenterX = int(Misc.map(CenterX, 0, size[0], 0, img_w))
-        CenterY = int(Misc.map(CenterY, 0, size[1], 0, img_h))
-        radius = int(Misc.map(radius, 0, size[0], 0, img_w))
-        use_time = 0       
+            cv2.line(display_image, (0, 450), (img_w, 450), (0, 255, 255), 2)
+            cv2.line(display_image, (0, 380), (img_w, 380), (0, 255, 255), 2)
+            cv2.line(display_image, (0, 300), (img_w, 300), (0, 255, 255), 2)
+        return display_image
+    # print(color_picker, target_color)
+    if color_picker is not None and not target_color:  
+        target_color, display_image = color_picker(img, display_image)
+        if target_color:
+            color_picker = None
+        # print(target_color)
+    elif target_color:
+        # 重新调整图像大小(resize the image)
+        frame_resize = cv2.resize(img, size, interpolation=cv2.INTER_NEAREST)
+        # 高斯模糊(Gaussian blur)
+        frame_gb = cv2.GaussianBlur(frame_resize, (3, 3), 3)
+        # 将图像转换到LAB色彩空间(convert the image to LAB color space)
+        frame_lab = cv2.cvtColor(frame_gb, cv2.COLOR_BGR2LAB)  
         
-        if y_dis == servo_data['servo1'] and abs(x_dis - servo_data['servo2']) < 150:
-            x_dis = servo_data['servo2']
+        min_color = [int(target_color[0][0] - 50 * threshold * 2),
+                     int(target_color[0][1] - 50 * threshold),
+                     int(target_color[0][2] - 50 * threshold)]
+        max_color = [int(target_color[0][0] + 50 * threshold * 2),
+                     int(target_color[0][1] + 50 * threshold),
+                     int(target_color[0][2] + 50 * threshold)]
+        #对原图像和掩模进行位运算(perform bitwise operation to the original image and mask)
+        frame_mask = cv2.inRange(frame_lab, tuple(min_color), tuple(max_color))
+        #腐蚀(corrosion)
+        eroded = cv2.erode(frame_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))  
+        #膨胀(dilation)
+        dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) 
+        if debug:
+            # 在调试模式下显示掩模(display mask in the debug mode)
+            cv2.imshow('dilate', dilated)
+        contours = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2]  # 找出轮廓(find out contour)
+        # 找出设定范围内的最大轮廓，返回轮廓和轮廓的面积(find the largest contour within the specified range and return the contour and its area)
+        areaMaxContour, area_max = getAreaMaxContour(contours)  
+        if areaMaxContour is not None:  # 如果找到最大面积的轮廓(if the contour with the maximal area is found)
+            try:
+                (CenterX, CenterY), radius = cv2.minEnclosingCircle(areaMaxContour) #获取最小外接圆(get the minimum circumcircle)
+            except BaseException as e:
+                print(e)
+                # display_image = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)  # 畸变矫正(distortion correction)
+                return display_image
+            # 将球的中心坐标和半径映射回原始图像尺寸(map the center coordinates and radius of the ball back to the original image size)
+            CenterX = int(Misc.map(CenterX, 0, size[0], 0, img_w))
+            CenterY = int(Misc.map(CenterY, 0, size[1], 0, img_h))
+            radius = int(Misc.map(radius, 0, size[0], 0, img_w))
+            use_time = 0       
+            if running: 
+                if y_dis == servo_data['servo1'] and abs(x_dis - servo_data['servo2']) < 150:
+                    x_dis = servo_data['servo2']
+                else:
+                    # 设置水平舵机位置PID的目标值为图像宽度的一半(set the target value of the PID for the horizontal servo position to half of the image width)
+                    x_pid.SetPoint = img_w / 2
+                    
+                    x_pid.update(CenterX)
+
+                    d_x = int(x_pid.output)
+                   
+                    last_status = 'left' if d_x > 0 else 'right'
+                    # 计算使用时间(calculate usage time)
+                    use_time = abs(d_x * 0.00025)
+                    x_dis += d_x    
+
+                    # 将控制头部水平移动的舵机位置限制在预设范围内(limit the position of the servo controlling horizontal head movement within the preset range)
+                    x_dis = servo_data['servo2'] - 400 if x_dis < servo_data['servo2'] - 400 else x_dis          
+                    x_dis = servo_data['servo2'] + 400 if x_dis > servo_data['servo2'] + 400 else x_dis
+                    
+                # 设置垂直舵机位置PID的目标值为图像高度的一半(set the target value of the PID for the vertical servo position to half of the image height)
+                y_pid.SetPoint = img_h / 2
+                y_pid.update(CenterY)
+                
+                d_y = int(y_pid.output)
+                # 计算使用时间(calculate usage time)
+                use_time = round(max(use_time, abs(d_y * 0.00025)), 5)
+                # 更新垂直舵机位置(update vertical servo position)
+                y_dis += d_y
+                
+                # 将控制头部垂直移动的舵机位置限制在预设范围内(limit the position of the servo controlling vertical head movement within the preset range)
+                y_dis = servo_data['servo1'] if y_dis < servo_data['servo1'] else y_dis
+                y_dis = 1200 if y_dis > 1200 else y_dis    
+                
+                ctl.set_pwm_servo_pulse(1, y_dis, use_time*1000)
+                ctl.set_pwm_servo_pulse(2, x_dis, use_time*1000)
+                time.sleep(use_time)
+            
+            # 在图像上绘制球的轮廓和参考线(draw the contour of the ball and reference lines on the image)
+            cv2.circle(display_image, (CenterX, CenterY), radius, (0, 255, 255), 2)
+            cv2.line(display_image, (int(CenterX - radius/2), CenterY), (int(CenterX + radius/2), CenterY), (0, 255, 255), 2)
+            cv2.line(display_image, (CenterX, int(CenterY - radius/2)), (CenterX, int(CenterY + radius/2)), (0, 255, 255), 2)
         else:
-            # 设置水平舵机位置PID的目标值为图像宽度的一半(set the target value of the PID for the horizontal servo position to half of the image width)
-            x_pid.SetPoint = img_w / 2
-            
-            x_pid.update(CenterX)
-
-            d_x = int(x_pid.output)
-           
-            last_status = 'left' if d_x > 0 else 'right'
-            # 计算使用时间(calculate usage time)
-            use_time = abs(d_x * 0.00025)
-            x_dis += d_x    
-
-            # 将控制头部水平移动的舵机位置限制在预设范围内(limit the position of the servo controlling horizontal head movement within the preset range)
-            x_dis = servo_data['servo2'] - 400 if x_dis < servo_data['servo2'] - 400 else x_dis          
-            x_dis = servo_data['servo2'] + 400 if x_dis > servo_data['servo2'] + 400 else x_dis
-            
-        # 设置垂直舵机位置PID的目标值为图像高度的一半(set the target value of the PID for the vertical servo position to half of the image height)
-        y_pid.SetPoint = img_h / 2
-        y_pid.update(CenterY)
-        
-        d_y = int(y_pid.output)
-        # 计算使用时间(calculate usage time)
-        use_time = round(max(use_time, abs(d_y * 0.00025)), 5)
-        # 更新垂直舵机位置(update vertical servo position)
-        y_dis += d_y
-        
-        # 将控制头部垂直移动的舵机位置限制在预设范围内(limit the position of the servo controlling vertical head movement within the preset range)
-        y_dis = servo_data['servo1'] if y_dis < servo_data['servo1'] else y_dis
-        y_dis = 1200 if y_dis > 1200 else y_dis    
-        
-        ctl.set_pwm_servo_pulse(1, y_dis, use_time*1000)
-        ctl.set_pwm_servo_pulse(2, x_dis, use_time*1000)
-        time.sleep(use_time)
-        
-        # 在图像上绘制球的轮廓和参考线(draw the contour of the ball and reference lines on the image)
-        cv2.circle(img, (CenterX, CenterY), radius, range_rgb[detect_color], 2)
-        cv2.line(img, (int(CenterX - radius/2), CenterY), (int(CenterX + radius/2), CenterY), range_rgb[detect_color], 2)
-        cv2.line(img, (CenterX, int(CenterY - radius/2)), (CenterX, int(CenterY + radius/2)), range_rgb[detect_color], 2)
-    else:
-        # 未识别到球时x，y坐标均返回-1(when the ball is not recognized, both the x and y coordinates return -1)
-        CenterX, CenterY = -1, -1
+            # 未识别到球时x，y坐标均返回-1(when the ball is not recognized, both the x and y coordinates return -1)
+            CenterX, CenterY = -1, -1
    
     if debug:
         # 在调试模式下显示舵机位置和参考线(in debug mode, display the servo position and reference lines)
-        cv2.putText(img, "x_dis: " + str(x_dis), (10, img.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, range_rgb[detect_color], 2)
-        cv2.line(img, (0, 450), (img_w, 450), (0, 255, 255), 2)
-        cv2.line(img, (0, 380), (img_w, 380), (0, 255, 255), 2)
-        cv2.line(img, (0, 300), (img_w, 300), (0, 255, 255), 2) 
+        cv2.putText(display_image, "x_dis: " + str(x_dis), (10, img.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 2)
+        cv2.line(display_image, (0, 450), (img_w, 450), (0, 255, 255), 2)
+        cv2.line(display_image, (0, 380), (img_w, 380), (0, 255, 255), 2)
+        cv2.line(display_image, (0, 300), (img_w, 300), (0, 255, 255), 2) 
 
-    return img
+    return display_image
 
 if __name__ == '__main__':
+    def mouse_callback(event, x, y, flags, param):
+        global color_picker
+        if event == cv2.EVENT_LBUTTONDOWN:
+            color_picker = ColorPicker([x/img_w, y/img_h], 20)
+            # print(x, y)
+        elif event == cv2.EVENT_RBUTTONDOWN:
+            color_picker = None
+            init()
+            reset()
     debug = False
     if debug:
         print('Debug Mode')
     
     init()
     start()
-    __target_color = ('red')
     
     open_once = yaml_handle.get_yaml_data('/boot/camera_setting.yaml')['open_once']
     if open_once:
@@ -482,15 +504,22 @@ if __name__ == '__main__':
         my_camera = Camera.Camera()
         my_camera.camera_open()              
     AGC.runActionGroup('stand')
+    t = time.time()
     while True:
         ret, img = my_camera.read()
         if ret:
             frame = img.copy()
             Frame = run(frame)           
-            cv2.imshow('Frame', Frame)
-            key = cv2.waitKey(1)
+            cv2.imshow('result_image', Frame)
+            cv2.setMouseCallback("result_image", mouse_callback)
+            d = time.time() - t
+            if d < 0.02:
+                key = cv2.waitKey(int((0.02 - d)*1000))
+            else:
+                key = cv2.waitKey(1)
             if key == 27:
                 break
+            t = time.time()
         else:
             time.sleep(0.01)
     my_camera.camera_close()

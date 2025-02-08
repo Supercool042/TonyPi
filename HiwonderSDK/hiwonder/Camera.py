@@ -27,7 +27,6 @@ class Camera:
         camera_setting = yaml_handle.get_yaml_data('/boot/camera_setting.yaml')
         self.flip = camera_setting['flip']
         self.flip_param = camera_setting['flip_param']
-
         # 以子线程的形式获取图像(get images in sub-thread)
         self.th = threading.Thread(target=self.camera_task, args=(), daemon=True)
         self.th.start()

@@ -37,15 +37,16 @@ class MJPG_Handler(BaseHTTPRequestHandler):
             while True:
                 try:
                     if img_show is not None:
-                        ret, jpg = cv2.imencode('.jpg', img_show, quality)
+                        ret, jpg = cv2.imencode('.jpg', img_show, [int(cv2.IMWRITE_JPEG_QUALITY), 70, cv2.IMWRITE_JPEG_OPTIMIZE, 1]) 
                         jpg_bytes = jpg.tobytes()
+   
                         self.send_header('Content-type', 'image/jpeg')
                         self.send_header('Content-length', len(jpg_bytes))
-                        #self.send_header('X-Timestamp:', time.time())
+                        # self.send_header('X-Timestamp:', time.time())
                         self.wfile.write('--boundarydonotcross\r\n'.encode())
                         self.end_headers()
                         self.wfile.write(jpg_bytes)
-                    time.sleep(0.03)
+                    # time.sleep(0.03)
                 except Exception as e:
                     print("error2", e)
                     break

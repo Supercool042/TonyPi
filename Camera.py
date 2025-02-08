@@ -70,6 +70,8 @@ class Camera:
                             self.frame = cv2.flip(Frame, self.flip_param)
                         else:
                             self.frame = cv2.resize(frame_tmp, (self.width, self.height), interpolation=cv2.INTER_NEAREST) # 缩放(scaling)
+                        cv2.imshow('1', self.frame)
+                        cv2.waitKey(1)
                     else:
                         # 如果获取画面失败，则尝试重新打开摄像头(if obtaining the image fails, attempt to reopen the camera)
                         self.frame = None

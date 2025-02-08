@@ -245,7 +245,7 @@ def RunAction(*args_):
     ret = (True, (), 'RunAction')
     actName = '0'
     times = 1
-    
+    print(args_) 
     if len(args_) != 2:
         return (False, __RPC_E01, 'RunAction')
     try:
@@ -335,13 +335,13 @@ def StandUp():
 
 def runbymainth(req, pas):
     if callable(req):
-        #print('pas', req)
+        # print('pas', req)
         event = threading.Event()
         ret = [event, pas, None]
         QUEUE.put((req, ret))
         count = 0
         #ret[2] =  req(pas)
-        #print('ret', ret)
+        # print('ret', ret)
         while ret[2] is None:
             time.sleep(0.01)
             count += 1
@@ -386,41 +386,20 @@ def GetRunningFunc():
     #return runbymainth("GetRunningFunc", ())
     return (True, (0,))
 
-# 设置跟踪颜色(set tracking color)
-# 参数：颜色（red，green，blue）(parameter: color(red, green, blue))
-# 例如：[(red,)](such as: [(red,)])
-@dispatcher.add_method
-def SetTargetTrackingColor(*target_color):
-    return runbymainth(ColorTrack.setTargetColor, target_color)
-
-# 设置巡线颜色(set line following color)
-# 参数：颜色（red，green，blue）(parameter: color(red, green, blue))
-# 例如：[(red,)](such as: [(red,)])
-@dispatcher.add_method
-def SetVisualPatrolColor(*target_color):
-    return runbymainth(VisualPatrol.setLineTargetColor, target_color)
-
-# 设置踢球颜色(set auto shooting color)
-# 参数：颜色（red，green，blue）(parameter: color(red, green, blue))
-# 例如：[(red,)](such as: [(red,)])
-@dispatcher.add_method
-def SetBallColor(*target_color):
-    return runbymainth(KickBall.setBallTargetColor, target_color)
-
-# 设置颜色阈值(set color threshold)
-# 参数：颜色lab(parameter: color lab)
+# 设置颜色阈值
+# 参数：颜色lab
 # 例如：[{'red': ((0, 0, 0), (255, 255, 255))}]
 @dispatcher.add_method
 def SetLABValue(*lab_value):
     #print(lab_value)
     return runbymainth(lab_adjust.setLABValue, lab_value)
 
-# 保存颜色阈值(save color threshold)
+# 保存颜色阈值
 @dispatcher.add_method
 def GetLABValue():
     return (True, lab_adjust.getLABValue()[1], 'GetLABValue')
 
-# 保存颜色阈值(save color threshold)
+# 保存颜色阈值
 @dispatcher.add_method
 def SaveLABValue(color=''):
     return runbymainth(lab_adjust.saveLABValue, (color, ))
@@ -428,6 +407,33 @@ def SaveLABValue(color=''):
 @dispatcher.add_method
 def HaveLABAdjust():
     return (True, True, 'HaveLABAdjust')
+
+@dispatcher.add_method
+def SetPoint(*point):
+    if point[0] == 2:
+        return runbymainth(KickBall.set_point, point[1])
+    elif point[0] == 4:
+        return runbymainth(VisualPatrol.set_point, point[1])
+    elif point[0] == 5:
+        return runbymainth(ColorTrack.set_point, point[1])
+
+@dispatcher.add_method
+def SetThreshold(*value):
+    if value[0] == 2:
+        return runbymainth(KickBall.set_threshold, value[1])
+    elif value[0] == 4:
+        return runbymainth(VisualPatrol.set_threshold, value[1])
+    elif value[0] == 5:
+        return runbymainth(ColorTrack.set_threshold, value[1])
+
+@dispatcher.add_method
+def GetRGBValue(value):
+    if value == 2:
+        return (True, KickBall.get_rgb_value(), 'GetRGBValue')
+    elif value == 4:
+        return (True, VisualPatrol.get_rgb_value(), 'GetRGBValue')
+    elif value == 5:
+        return (True, ColorTrack.get_rgb_value(), 'GetRGBValue')
 
 @Request.application
 def application(request):

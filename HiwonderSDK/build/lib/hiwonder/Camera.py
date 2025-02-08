@@ -10,7 +10,7 @@ if __name__ == '__main__':
 else:
     from . import yaml_handle
 
-#这是一个用Opencv获取usb摄像头的画面的封装库
+#这是一个用Opencv获取usb摄像头的画面的封装库(here is a wrapper library for acquiring video from a USB camera using OpenCV)
 
 if sys.version_info.major == 2:
     print('Please run this program with python3!')
@@ -27,22 +27,21 @@ class Camera:
         camera_setting = yaml_handle.get_yaml_data('/boot/camera_setting.yaml')
         self.flip = camera_setting['flip']
         self.flip_param = camera_setting['flip_param']
-
-        # 以子线程的形式获取图像
+        # 以子线程的形式获取图像(get images in sub-thread)
         self.th = threading.Thread(target=self.camera_task, args=(), daemon=True)
         self.th.start()
 
-    def camera_open(self): # 开启
+    def camera_open(self): # 开启(open)
         try:
             self.cap = cv2.VideoCapture(-1)
             self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('Y', 'U', 'Y', 'V'))
-            self.cap.set(cv2.CAP_PROP_FPS, 30) # 帧率
-            #self.cap.set(cv2.CAP_PROP_SATURATION, 40) # 饱和度
+            self.cap.set(cv2.CAP_PROP_FPS, 30) # 帧率(frame rate)
+            #self.cap.set(cv2.CAP_PROP_SATURATION, 40) # 饱和度(saturation)
             self.opened = True
         except Exception as e:
             print('打开摄像头失败:', e)
 
-    def camera_close(self): # 关闭
+    def camera_close(self): # 关闭(close)
         try:
             self.opened = False
             time.sleep(0.2)
@@ -59,19 +58,19 @@ class Camera:
         else:
             return True, self.frame
     
-    def camera_task(self): # 获取摄像头画面线程
+    def camera_task(self): # 获取摄像头画面线程(get the camera image thread)
         while True:
             try:
-                if self.opened and self.cap.isOpened(): # 判断是否开启
-                    ret, frame_tmp = self.cap.read() # 获取画面
+                if self.opened and self.cap.isOpened(): # 判断是否开启(determine whether it is opened)
+                    ret, frame_tmp = self.cap.read() # 获取画面(get image)
                     if ret:
                         if self.flip:
-                            Frame = cv2.resize(frame_tmp, (self.width, self.height), interpolation=cv2.INTER_NEAREST) # 缩放
+                            Frame = cv2.resize(frame_tmp, (self.width, self.height), interpolation=cv2.INTER_NEAREST) # 缩放(scaling)
                             self.frame = cv2.flip(Frame, self.flip_param)
                         else:
-                            self.frame = cv2.resize(frame_tmp, (self.width, self.height), interpolation=cv2.INTER_NEAREST) # 缩放
+                            self.frame = cv2.resize(frame_tmp, (self.width, self.height), interpolation=cv2.INTER_NEAREST) # 缩放(scaling)
                     else:
-                        # 如果获取画面失败，则尝试重新打开摄像头
+                        # 如果获取画面失败，则尝试重新打开摄像头(if the image acquisition fails, attempt to reopen the camera)
                         self.frame = None
                         cap = cv2.VideoCapture(-1)
                         ret, _ = cap.read()
@@ -89,7 +88,7 @@ class Camera:
                 time.sleep(0.01)
 
 if __name__ == '__main__':
-    # 使用例程
+    # 使用例程(usage routine)
     my_camera = Camera()
     my_camera.camera_open()
     print('摄像头原始画面，未做畸变校正')

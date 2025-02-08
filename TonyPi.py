@@ -10,7 +10,7 @@ import threading
 import RPCServer
 import MjpgServer
 import numpy as np
-
+# import cvfilter
 import hiwonder.Camera as Camera
 import hiwonder.yaml_handle as yaml_handle
 
@@ -29,37 +29,39 @@ if sys.version_info.major == 2:
 
 QUEUE_RPC = queue.Queue(10)
 
+def task():
+    while True:
+        try:
+            req, ret = QUEUE_RPC.get(False)
+            event, params, *_ = ret
+            ret[2] = req(params)  # 执行RPC命令(execute RPC command)
+            event.set()
+        except queue.Empty:
+            time.sleep(0.01)
+
 def startTonyPi():
 
     RPCServer.QUEUE = QUEUE_RPC
 
     threading.Thread(target=RPCServer.startRPCServer,
                      daemon=True).start()  # rpc服务器(rpc server)
-    threading.Thread(target=MjpgServer.startMjpgServer,
+    threading.Thread(target=task,
                      daemon=True).start()  # mjpg流服务器(mjpg stream server)
     
-    
+    threading.Thread(target=MjpgServer.startMjpgServer,
+                     daemon=True).start()  # mjpg流服务器(mjpg stream server)
     loading_picture = cv2.imread('/home/pi/TonyPi/Functions/loading.jpg')
     cam = Camera.Camera()  # 相机读取(camera reading)
     open_once = yaml_handle.get_yaml_data('/boot/camera_setting.yaml')['open_once']
     if open_once:
         cam.camera_open()
 
-    open_once
     Running.open_once = open_once
     Running.cam = cam
 
     while True:
         time.sleep(0.03)
         # 执行需要在本线程中执行的RPC命令(execute RPC commands that need to be executed in this thread)
-        while True:
-            try:
-                req, ret = QUEUE_RPC.get(False)
-                event, params, *_ = ret
-                ret[2] = req(params)  # 执行RPC命令(execute RPC command)
-                event.set()
-            except:
-                break
         #####
         # 执行功能玩法程序：(perform function program)
         try:
@@ -73,10 +75,7 @@ def startTonyPi():
                 else:
                     MjpgServer.img_show = loading_picture
             else:
-                if open_once:
-                    MjpgServer.img_show = cam.frame
-                else:
-                    cam.frame = None
+                MjpgServer.img_show = cam.frame
         except KeyboardInterrupt:
             break
         except BaseException as e:

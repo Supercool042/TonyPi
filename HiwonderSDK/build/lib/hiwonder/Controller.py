@@ -10,12 +10,12 @@ class Controller:
         self.time_out = time_out
 
     """
-        function name：  获取总线舵机温度限制
+        function name：  获取总线舵机温度限制(obtain bus servo temperature limit)
 
         param：
-                servo_id: 要获取温度限制的舵机id
+                servo_id: 要获取温度限制的舵机id(to obtain the servo id of temperature limit)
 
-        return：   返回舵机温度限制
+        return：   返回舵机温度限制(return the servo temperature limit)
     """ 
     def get_bus_servo_temp_limit(self, servo_id):
         count = 0
@@ -29,12 +29,12 @@ class Controller:
             time.sleep(0.01)
 
     """
-        function name：  获取总线舵机角度限制
+        function name：  获取总线舵机角度限制(get the bus servo angle limit)
 
         param：
-                servo_id: 要获取角度限制的舵机ID
+                servo_id: 要获取角度限制的舵机ID(to obtain the servo ID of angle limit)
 
-        return：   返回舵机角度限制
+        return：   返回舵机角度限制(return servo angle limit)
     """ 
     def get_bus_servo_angle_limit(self, servo_id):
         count = 0
@@ -49,12 +49,12 @@ class Controller:
     
 
     """
-        function name：  获取总线舵机电压限制
+        function name：  获取总线舵机电压限制(get bus servo voltage limit)
 
         param：
-                servo_id: 要获取电压限制的舵机id
+                servo_id: 要获取电压限制的舵机id(to obtain the servo id of voltage limit)
 
-        return：   返回舵机电压限制
+        return：   返回舵机电压限制(return the servo voltage limit)
     """ 
     def get_bus_servo_vin_limit(self, servo_id):
         count = 0
@@ -69,11 +69,11 @@ class Controller:
     
 
     """
-        function name：  获取总线舵机ID
+        function name：  获取总线舵机ID(get bus servo ID)
 
         param：
 
-        return：   返回舵机ID
+        return：   返回舵机ID(return servo ID)
     """      
     def get_bus_servo_id(self):
         count = 0
@@ -88,12 +88,12 @@ class Controller:
     
 
     """
-        function name：  获取总线舵机位置
+        function name：  获取总线舵机位置(get bus servo position)
 
         param：
-                servo_id: 要获取位置的舵机id
+                servo_id: 要获取位置的舵机id(to obtain the position of the servo id)
 
-        return：   返回舵机位置
+        return：   返回舵机位置(return servo position)
     """      
     def get_bus_servo_pulse(self, servo_id):
         count = 0
@@ -108,12 +108,12 @@ class Controller:
    
 
     """
-        function name：  获取总线舵机电压
+        function name：  获取总线舵机电压(get bus servo voltage)
 
         param：
-                servo_id: 要获取电压的舵机id
+                servo_id: 要获取电压的舵机id(to obtain the servo id of voltage)
 
-        return：   返回舵机电压
+        return：   返回舵机电压(return servo voltage)
     """  
     def get_bus_servo_vin(self, servo_id):
         count = 0
@@ -128,12 +128,12 @@ class Controller:
     
 
     """
-        function name：  获取总线舵机温度
+        function name：  获取总线舵机温度(get bus servo temperature)
 
         param：
-                servo_id: 要获取温度的舵机id
+                servo_id: 要获取温度的舵机id(to obtain the servo id of temperature)
 
-        return：   返回舵机温度
+        return：   返回舵机温度(return servo temperature)
     """  
     def get_bus_servo_temp(self, servo_id):
         count = 0
@@ -148,12 +148,12 @@ class Controller:
     
 
     """
-        function name：  获取总线舵机偏差
+        function name：  获取总线舵机偏差(obtain bus servo deviation)
 
         param：
-                servo_id: 要获取偏差的舵机id
+                servo_id: 要获取偏差的舵机id(to obtain the servo id of deviation)
 
-        return：   返回舵机偏差
+        return：   返回舵机偏差(return servo deviation)
     """    
     def get_bus_servo_deviation(self, servo_id):
         count = 0
@@ -168,113 +168,113 @@ class Controller:
     
 
     """
-        function name：  设置总线舵机位置
+        function name：  设置总线舵机位置(set bus servo position)
 
         param：
-                servo_id: 要驱动的舵机id
-                pulse:    舵机目标位置
-                use_time: 转动需要的时间    
+                servo_id: 要驱动的舵机id(the id of the servo to be driven)
+                pulse:    舵机目标位置(servo target position)
+                use_time: 转动需要的时间(the time required for rotation)
     """
     def set_bus_servo_pulse(self, servo_id, pulse, use_time):
         self.board.bus_servo_set_position(use_time/1000, [[servo_id, pulse]])
 
     """
-        function name：  设置pwm舵机位置
+        function name：  设置pwm舵机位置(set pwm servo position)
 
         param：
-                servo_id: 要驱动的舵机id
-                pulse:    舵机目标位置
-                use_time: 转动需要的时间    
+                servo_id: 要驱动的舵机id(the servo id needed to be driven)
+                pulse:    舵机目标位置(servo target position)
+                use_time: 转动需要的时间(the time needed to rotate)
     """
     def set_pwm_servo_pulse(self, servo_id, pulse, use_time):
         self.board.pwm_servo_set_position(use_time/1000, [[servo_id, pulse]])
 
     """
-        function name：  设置总线舵机ID
+        function name：  设置总线舵机ID(set bus servo ID)
 
         param：
-                servo_id_now: 当前的舵机ID
-                servo_id_new: 新的舵机ID
+                servo_id_now: 当前的舵机ID(current servo ID)
+                servo_id_new: 新的舵机ID(new servo ID)
     """
     def set_bus_servo_id(self, servo_id_now, servo_id_new):
         self.board.bus_servo_set_id(servo_id_now, servo_id_new)
 
     """
-        function name：  设置总线舵机偏差
+        function name：  设置总线舵机偏差(set bus servo deviation)
 
         param：
-                servo_id:  要设置的舵机ID
-                deviation: 设置的舵机偏差
+                servo_id:  要设置的舵机ID(the servo ID needed to be set)
+                deviation: 设置的舵机偏差(set the servo deviation)
     """
     def set_bus_servo_deviation(self, servo_id, deviation):
         self.board.bus_servo_set_offset(servo_id, deviation)
 
     """
-        function name：  设置总线舵机温度限制
+        function name：  设置总线舵机温度限制(set bus servo temperature limit)
 
         param：
-                servo_id:  要设置的舵机ID
-                temp_limit: 设置的温度限制
+                servo_id:  要设置的舵机ID(servo ID needed to be set)
+                temp_limit: 设置的温度限制(set the temperature limit)
     """
     def set_bus_servo_temp_limit(self, servo_id, temp_limit):
         self.board.bus_servo_set_temp_limit(servo_id, temp_limit)
 
     """
-        function name：  设置总线舵机角度限制
+        function name：  设置总线舵机角度限制(set bus servo angle limit)
 
         param：
-                servo_id:  要设置的舵机ID
-                angle_limit: 设置的角度限制
+                servo_id:  要设置的舵机ID(servo ID needed to be set)
+                angle_limit: 设置的角度限制(set the angle limit)
     """
     def set_bus_servo_angle_limit(self, servo_id, angle_limit):
         self.board.bus_servo_set_angle_limit(servo_id, angle_limit)
 
     """
-        function name：  设置总线舵机电压限制
+        function name：  设置总线舵机电压限制(set bus servo voltage limit)
 
         param：
-                servo_id:  要设置的舵机ID
-                vin_limit: 设置的电压限制
+                servo_id:  要设置的舵机ID(servo ID to be set)
+                vin_limit: 设置的电压限制(set the voltage limit)
     """
     def set_bus_servo_vin_limit(self, servo_id, vin_limit):
         self.board.bus_servo_set_vin_limit(servo_id, vin_limit)
 
     """
-        function name：  下载舵机偏差
+        function name：  下载舵机偏差(download servo deviation)
 
         param：
-                servo_id:  要下载偏差的舵机ID
+                servo_id:  要下载偏差的舵机ID(the ID of the servo to download the deviation)
     """    
     def save_bus_servo_deviation(self, servo_id):
         self.board.bus_servo_save_offset(servo_id)
 
     """
-        function name：  舵机掉电
+        function name：  舵机掉电(servo loss the power)
 
         param：
-                servo_id:  要掉电的舵机ID
+                servo_id:  要掉电的舵机ID(the ID of the servo to loss power)
     """ 
     def unload_bus_servo(self, servo_id):
         self.board.bus_servo_enable_torque(servo_id, 1)
 
     """
-        function name：  驱动蜂鸣器
+        function name：  驱动蜂鸣器(drive the buzzer)
 
         param：
-                freq:       声音频率
-                on_time：   开启时间
-                off_time:   关闭时间
-                repeat：    重复次数
+                freq:       声音频率(sound frequency)
+                on_time：   开启时间(turn on time)
+                off_time:   关闭时间(turn off time)
+                repeat：    重复次数(repetition times)
     """ 
     def set_buzzer(self, freq, on_time, off_time, repeat=1):
         self.board.set_buzzer(freq, on_time, off_time, repeat=1)
 
     """
-        function name：  获取imu数据
+        function name：  获取imu数据(get imu data)
 
         param：
         
-        return：返回IMU数据，ax, ay, az, gx, gy, gz
+        return：返回IMU数据，ax, ay, az, gx, gy, gz(return IMU data, ax, ay, az, gx, gy, gz)
     """ 
     def get_imu(self):
         count = 0
@@ -288,7 +288,7 @@ class Controller:
             time.sleep(0.01)
 
     """
-        function name：  数据接收使能
+        function name：  数据接收使能(data reception enable)
 
         param：
         

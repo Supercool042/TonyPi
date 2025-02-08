@@ -10,7 +10,7 @@ import serial
 import threading
 
 class PacketControllerState(enum.IntEnum):
-    # 通信协议的格式
+    # 通信协议的格式(the format of communication protocol)
     # 0xAA 0x55 Length Function ID Data Checksum
     PACKET_CONTROLLER_STATE_STARTBYTE1 = 0
     PACKET_CONTROLLER_STATE_STARTBYTE2 = 1
@@ -21,19 +21,19 @@ class PacketControllerState(enum.IntEnum):
     PACKET_CONTROLLER_STATE_CHECKSUM = 6
 
 class PacketFunction(enum.IntEnum):
-    # 可通过串口实现的控制功能
+    # 可通过串口实现的控制功能(control function realized by interface)
     PACKET_FUNC_SYS = 0
-    PACKET_FUNC_LED = 1  # LED控制
-    PACKET_FUNC_BUZZER = 2  # 蜂鸣器控制
-    PACKET_FUNC_MOTOR = 3  # 电机控制
-    PACKET_FUNC_PWM_SERVO = 4  # PWM舵机控制, 板子上从里到外依次为1-4
-    PACKET_FUNC_BUS_SERVO = 5  # 总线舵机控制
-    PACKET_FUNC_KEY = 6  # 按键获取
-    PACKET_FUNC_IMU = 7  # IMU获取
-    PACKET_FUNC_GAMEPAD = 8  # 手柄获取
-    PACKET_FUNC_SBUS = 9  # 航模遥控获取
-    PACKET_FUNC_OLED = 10 # OLED 显示内容设置
-    PACKET_FUNC_RGB = 11 # 设置RGB颜色
+    PACKET_FUNC_LED = 1  # LED控制(LED control)
+    PACKET_FUNC_BUZZER = 2  # 蜂鸣器控制(buzzer control)
+    PACKET_FUNC_MOTOR = 3  # 电机控制(motor control)
+    PACKET_FUNC_PWM_SERVO = 4  # PWM舵机控制, 板子上从里到外依次为1-4(PWM servo control, from the inside out, the sequence is 1-4)
+    PACKET_FUNC_BUS_SERVO = 5  # 总线舵机控制(bus servo control)
+    PACKET_FUNC_KEY = 6  # 按键获取(key obtain)
+    PACKET_FUNC_IMU = 7  # IMU获取(IMU obtain)
+    PACKET_FUNC_GAMEPAD = 8  # 手柄获取(handle obtain)
+    PACKET_FUNC_SBUS = 9  # 航模遥控获取(remote control of model aircraft obtain)
+    PACKET_FUNC_OLED = 10 # OLED 显示内容设置(OLED display content setting)
+    PACKET_FUNC_RGB = 11 # 设置RGB颜色(set RGB color)
     PACKET_FUNC_NONE = 12
 
 class PacketReportKeyEvents(enum.IntEnum):
@@ -67,7 +67,7 @@ crc8_table = [
 ]
 
 def checksum_crc8(data):
-    # 校验
+    # 校验(check)
     check = 0
     for b in data:
         check = crc8_table[check ^ b]
@@ -335,7 +335,7 @@ class Board:
         self.buf_write(PacketFunction.PACKET_FUNC_MOTOR, data)
 
     def set_oled_text(self, line, text):
-        data = [line, len(text)] # 子命令为 0x01 设置 SSID, 第二个字节是字符串长度，该长度包含'\0'字符串结束符
+        data = [line, len(text)] # 子命令为 0x01 设置 SSID, 第二个字节是字符串长度，该长度包含'\0'字符串结束符(the sub-command is 0x01 to set the SSID. The second byte is the length of the string, including the '\0' string termination character)
         data.extend(bytes(text, encoding='utf-8'))
         self.buf_write(PacketFunction.PACKET_FUNC_OLED, data)
 

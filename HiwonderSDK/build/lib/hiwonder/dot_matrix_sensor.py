@@ -10,7 +10,7 @@ def sleep_us(t):
     time.sleep(t / 1000000)
 
 class TM1640(object):
-    # 字模数据
+    # 字模数据(font data)
     digit_dict = {'0': 0x3f,
                   '1': 0x06,
                   '2': 0x5b,
@@ -122,16 +122,16 @@ class TM1640(object):
         self._write_dsp_ctrl()
 
     def clear(self):
-        """熄灭点阵所有led"""
+        """熄灭点阵所有led(turn off all LEDs in the matrix)"""
         self.display_buf = [0] * 16
         self.update_display()
 
     def set_bit(self, x, y, s):
-        """设置(x, y)处的led状态，0或者1，0表示熄灭"""
+        """设置(x, y)处的led状态，0或者1，0表示熄灭(set the LED state at (x, y) to 0 or 1, where 0 represents off)"""
         self.display_buf[x] = (self.display_buf[x] & (~(0x01 << y))) | (s << y)
 
     def set_number(self, number):
-        """数码管显示数字"""
+        """数码管显示数字(display a number on the digital tube)"""
         self.display_buf = [self.digit_dict['0']] * 4
         num = list(str(number))
         num.reverse()
@@ -142,16 +142,16 @@ class TM1640(object):
                 self.display_buf[-i-2] = self.digit_dict[num[i - 1]] + self.digit_dict['.']
     
     def set_buf_horizontal(self, buf):
-        """设置显示的二进制列表，横向"""
+        """设置显示的二进制列表，横向(set the horizontal list of binary numbers to be displayed)"""
         l = zip(*buf[::-1])
         self.display_buf = [int(''.join(i), 2) for i in l]
     
     def set_buf_vertical(self, buf):
-        """设置显示的二进制列表，竖向"""
+        """设置显示的二进制列表，竖向(set the vertical list of binary numbers to be displayed)"""
         self.display_buf = [int(i, 2) for i in buf]
 
     def update_display(self):
-        """刷新显示"""
+        """刷新显示(refresh display)"""
         self.write(self.display_buf)
 
 if __name__ == "__main__":

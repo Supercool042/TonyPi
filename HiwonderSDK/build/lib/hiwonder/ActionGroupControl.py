@@ -8,7 +8,7 @@ import sqlite3 as sql
 import hiwonder.ros_robot_controller_sdk as rrc
 from hiwonder.Controller import Controller
 
-#上位机编辑的动作调用库
+#上位机编辑的动作调用库(PC edited action calling library)
 
 runningAction = False
 stop_action = False
@@ -96,8 +96,8 @@ def runActionGroup(actName, times=1, with_stand=False, lock_servos='', path="/ho
 
 def runAction(actNum, lock_servos='', path="/home/pi/TonyPi/ActionGroups/"):
     '''
-    运行动作组，无法发送stop停止信号
-    :param actNum: 动作组名字 ， 字符串类型
+    运行动作组，无法发送stop停止信号(run the action group, cannot send stop signal)
+    :param actNum: 动作组名字 ， 字符串类型(action group name, string type)
     :return:
     '''
     global runningAction
@@ -128,7 +128,7 @@ def runAction(actNum, lock_servos='', path="/home/pi/TonyPi/ActionGroups/"):
                         else:
                             ctl.set_bus_servo_pulse(i+1, act[2 + i], act[1])
                     time.sleep(float(act[1])/1000.0)
-                else:   # 运行完才退出
+                else:   # 运行完才退出(exit after running)
                     break
             runningAction = False
             

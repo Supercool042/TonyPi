@@ -65,10 +65,14 @@ async def stop(action_set_name=None):
     if action_set_name is not None:
         await run_action_set(action_set_name, 1)
         
-shield = True
+athletics_perform_finish = True
 th = None
 last_status = ''
 connected = False
+action_name = None
+status = 'init'
+last_buttons = key_map
+aplay_thread = None
 while True:
     if os.path.exists("/dev/input/js0") is True:
         if connected is False:
@@ -92,120 +96,140 @@ while True:
         pygame.event.pump()     
         actName = None
         times = 1
-        #buttons = [js.get_button(i) for i in range(15)]
-        #print(buttons)
-        # hats = [js.get_hat(i) for i in range(1)]
-        # print(hats)
         
         try:
-            if js.get_button(key_map["PSB_R1"]):
-                if shield:
-                    actName = 'right_kick'
-                    print("right_kick")
-            if js.get_button(key_map["PSB_R2"]):
-                if shield:
-                    actName = 'turn_right'
-                    print("turn_right")
-            if js.get_button(key_map["PSB_L1"]):
-                if shield:
-                    actName = 'left_kick'
-                    print("left_kick")
-            if js.get_button(key_map["PSB_L2"]):
-                if shield:
-                    actName = 'turn_left'
-                    print("turn_left")
-            if js.get_button(key_map["PSB_SQUARE"]): #正方形(square)
-                if shield:
-                    actName = 'twist'
-                    print("twist")
-            if js.get_button(key_map["PSB_CIRCLE"]): #圈(circle)
-                if shield:
-                    actName = 'right_shot_fast'
-                    print("right_shot_fast")
-            if js.get_button(key_map["PSB_TRIANGLE"]): #三角(triangle)
-                if shield:
-                    actName = 'wave'
-                    print("wave")
-            if js.get_button(key_map["PSB_CROSS"]): #叉(cross)
-                if shield:
-                    actName = 'bow'
-                    print("bow")
-            if  js.get_hat(0)[0] == 0  and  js.get_hat(0)[1] == 1:
-                if shield:
-                    last_status = 'go'
-                    actName = 'go_forward'
-                    print("go_forward")
-                times = 0
-            elif js.get_hat(0)[0] == 0  and  js.get_hat(0)[1] == -1:
-                if shield:
-                    last_status = 'back'
-                    actName = 'back_fast'
-                    print("back_fast")
-                times = 0
-            elif js.get_hat(0)[0] == -1  and  js.get_hat(0)[1] == 0:
-                if shield:
-                    actName = 'left_move'
-                    print("left_move")
-            elif js.get_hat(0)[0] == 1  and  js.get_hat(0)[1] == 0:
-                if shield:
-                    actName = 'right_move' 
-                    print("right_move") 
-            else:
-                if (last_status == 'go' or last_status == 'back') and actName is None:
-                    AGC.stopActionGroup()
-                    last_status = '' 
-                 
-            lx = js.get_axis(0)
-            ly = js.get_axis(1)
-            
-            if lx < -0.5 :
-                if shield:
-                    actName = 'left_move'
-            elif lx > 0.5:
-                if shield:
-                    actName = 'right_move'
-            l3_state = js.get_button(key_map["PSB_L3"])
-            if ly < -0.5 :
-                if not l3_state:
-                    if shield:
-                        last_status = 'go'
-                        actName = 'go_forward'
-                    times = 0
-            elif ly > 0.5:
-                if not l3_state:
-                    if shield:
-                        last_status = 'back'
-                        actName = 'back_fast'
-                    times = 0
-            else:
-                if (last_status == 'go' or last_status == 'back') and actName is None:
-                    AGC.stopActionGroup()
-                    last_status = ''
-            if js.get_button(key_map["PSB_START"]):
-                if shield:
-                    actName = 'stand_slow'
-                    board.set_buzzer(1900, 0.1, 0.9, 1) # 以1900Hz的频率，持续响0.1秒，关闭0.9秒，重复1次(at a frequency of 1900Hz, beep for 0.1 seconds, then silence for 0.9 seconds, repeating once)
-                
+            buttons = {}
+            for i in key_map:
+                buttons[i] = js.get_button(key_map[i])
             if js.get_button(key_map["PSB_SELECT"]):
                 time.sleep(0.01)
-                if js.get_button(key_map["PSB_START"]):
-                    shield = False
-                    subprocess.Popen("python3 /home/pi/TonyPi/Extend/athletics_course/athletics_perform.py",shell=True)
-                    time.sleep(1)
+                if last_buttons != buttons:
+                    os.system('amixer -q -D pulse set Master {}%'.format(20))
+                    action_name = None
+                    if js.get_button(key_map["PSB_START"]):
+                        athletics_perform_finish = False
+                        subprocess.Popen("python3 /home/pi/TonyPi/Extend/athletics_course/athletics_perform.py",shell=True)
+                        time.sleep(1)
+                    elif js.get_button(key_map["PSB_L1"]):
+                        action_name = '21'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_L2"]):
+                        action_name = '22'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_R1"]):
+                        action_name = '23'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_R2"]):
+                        action_name = '24'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_CIRCLE"]):
+                        action_name = '18'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_SQUARE"]):
+                        action_name = '19'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_TRIANGLE"]):
+                        action_name = '20'
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                    elif js.get_button(key_map["PSB_CROSS"]):
+                        board.set_buzzer(1900, 0.1, 0.1, 2)
+                        athletics_perform_finish = True
+                        os.system("/home/pi/TonyPi/Extend/test.sh")
+            elif athletics_perform_finish:
+                if js.get_button(key_map["PSB_R1"]):
+                    actName = 'right_kick'
+                    # print("right_kick")
+                if js.get_button(key_map["PSB_R2"]):
+                    actName = 'turn_right'
+                    # print("turn_right")
+                if js.get_button(key_map["PSB_L1"]):
+                    actName = 'left_kick'
+                    # print("left_kick")
+                if js.get_button(key_map["PSB_L2"]):
+                    actName = 'turn_left'
+                    # print("turn_left")
+                if js.get_button(key_map["PSB_SQUARE"]): #正方形(square)
+                    actName = 'twist'
+                    # print("twist")
+                if js.get_button(key_map["PSB_CIRCLE"]): #圈(circle)
+                    actName = 'right_shot_fast'
+                    # print("right_shot_fast")
+                if js.get_button(key_map["PSB_TRIANGLE"]): #三角(triangle)
+                    actName = 'wave'
+                    # print("wave")
+                if js.get_button(key_map["PSB_CROSS"]): #叉(cross)
+                    actName = 'bow'
+                    # print("bow")
+                if  js.get_hat(0)[0] == 0  and  js.get_hat(0)[1] == 1:
+                    last_status = 'go'
+                    actName = 'go_forward'
+                    # print("go_forward")
+                    times = 0
+                elif js.get_hat(0)[0] == 0  and  js.get_hat(0)[1] == -1:
+                    last_status = 'back'
+                    actName = 'back_fast'
+                    # print("back_fast")
+                    times = 0
+                elif js.get_hat(0)[0] == -1  and  js.get_hat(0)[1] == 0:
+                    actName = 'left_move'
+                    # print("left_move")
+                elif js.get_hat(0)[0] == 1  and  js.get_hat(0)[1] == 0:
+                    actName = 'right_move' 
+                    # print("right_move") 
                 else:
-                    shield = True
-                    os.system("/home/pi/TonyPi/Extend/test.sh")
+                    if (last_status == 'go' or last_status == 'back') and actName is None:
+                        AGC.stopActionGroup()
+                        last_status = '' 
+                 
+                lx = js.get_axis(0)
+                ly = js.get_axis(1)
                 
+                if lx < -0.5 :
+                    actName = 'left_move'
+                elif lx > 0.5:
+                    actName = 'right_move'
+                l3_state = js.get_button(key_map["PSB_L3"])
+                if ly < -0.5 :
+                    if not l3_state:
+                        last_status = 'go'
+                        actName = 'go_forward'
+                        times = 0
+                elif ly > 0.5:
+                    if not l3_state:
+                        last_status = 'back'
+                        actName = 'back_fast'
+                        times = 0
+                else:
+                    if (last_status == 'go' or last_status == 'back') and actName is None:
+                        AGC.stopActionGroup()
+                        last_status = ''
+                if js.get_button(key_map["PSB_START"]):
+                    if status == 'play':
+                        AGC.stopAction()
+                        if aplay_thread is not None:
+                            aplay_thread.terminate()
+                            aplay_thread.wait()
+                            aplay_thread = None
+                            time.sleep(0.5)
+                        status = 'init'
+                    actName = 'stand_slow'
+                    board.set_buzzer(1900, 0.1, 0.9, 1) # 以1900Hz的频率，持续响0.1秒，关闭0.9秒，重复1次(at a frequency of 1900Hz, beep for 0.1 seconds, then silence for 0.9 seconds, repeating once)
+            if action_name is not None:
+                threading.Thread(target=AGC.runActionGroup, args=(action_name, 1, True), daemon=True).start()
+                aplay_thread = subprocess.Popen(["aplay", "/home/pi/TonyPi/audio/{}.wav".format(action_name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                status = 'play'
+                action_name = None
             if th is not None:
                 if actName is not None:
                     if not th.is_alive():
-                        asyncio.run(run_action_set(actName, 1))
+                        # asyncio.run(run_action_set(actName, 1))
                         th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                         th.start()
             else:
-                asyncio.run(run_action_set(actName, 1))
+                # asyncio.run(run_action_set(actName, 1))
                 th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                 th.start()
+            last_buttons = buttons
         except Exception as e:
             print(e)
             connected = False          

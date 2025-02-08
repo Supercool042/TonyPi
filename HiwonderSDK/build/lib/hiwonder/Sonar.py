@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from smbus2 import SMBus, i2c_msg
-#幻尔科技iic超声波使用例程#
+#幻尔科技iic超声波使用例程#(hiwonder I2C ultrasonic usage routine)
 
 if sys.version_info.major == 2:
     print('Please run this program with python3!')
@@ -47,7 +47,7 @@ class Sonar:
         else:
             raise AttributeError('Unknow attribute : %s'%attr)
     
-    #设置灯的模式，0为彩灯模式，1为呼吸灯模式
+    #设置灯的模式，0为彩灯模式，1为呼吸灯模式(set the light mode, 0 is the color light mode, 1 is the breathing light mode)
     def setRGBMode(self, mode):
         with SMBus(self.i2c) as bus:
             try:
@@ -55,9 +55,9 @@ class Sonar:
             except:
                 print('Sensor not connected!')
     
-    #设置灯的颜色
-    #参数1：0表示左边的灯，1表示右边
-    #参数2：颜色的rgb比例值，以元组形式传入，范围0-255, 依次为r，g，b
+    #设置灯的颜色(set the light color)
+    #参数1：0表示左边的灯，1表示右边(parameter 1: 0 is the light on the left, 1 is the light on the right)
+    #参数2：颜色的rgb比例值，以元组形式传入，范围0-255, 依次为r，g，b(parameter 2: the RGB proportion values of the color are passed in as a tuple, ranging from 0 to 255, in the order of (R, G, B))
     def setRGB(self, index, rgb):
         start_reg = 3 if index == 1 else 6
         with SMBus(self.i2c) as bus:
@@ -68,10 +68,10 @@ class Sonar:
             except:
                 print('Sensor not connected!')
     
-    #呼吸灯模式
-    #参数1：0表示左边的灯，1表示右边
-    #参数2：颜色通道， 0表示然，1表示g， 2表示b
-    #参数3：颜色变化周期，单位ms
+    #呼吸灯模式(breathing light mode)
+    #参数1：0表示左边的灯，1表示右边(parameter 1: 0 is the light on the left, 1 is the light on the right)
+    #参数2：颜色通道， 0表示然，1表示g， 2表示b(parameter 2: color channel, 0 means r, 1 means g, 2 means b)
+    #参数3：颜色变化周期，单位ms(parameter 3: color change cycle, in milliseconds)
     def setBreathCycle(self, index, rgb, cycle):
         start_reg = 9 if index == 1 else 12
         cycle = int(cycle / 100)
@@ -90,7 +90,7 @@ class Sonar:
         self.setBreathCycle(0,1, 2000)
         self.setBreathCycle(0,2, 3400)
 
-    #获取距离, 单位mm
+    #获取距离, 单位mm(obtain distance, in mm)
     def getDistance(self):
         dist = 99999
         try:
