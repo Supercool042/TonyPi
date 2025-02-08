@@ -208,7 +208,7 @@ while True:
                     actName = 'stand_slow'
                     board.set_buzzer(1900, 0.1, 0.9, 1) # 以1900Hz的频率，持续响0.1秒，关闭0.9秒，重复1次(at a frequency of 1900Hz, beep for 0.1 seconds, then silence for 0.9 seconds, repeating once)
             if action_name is not None:
-                threading.Thread(target=AGC.runActionGroup, args=(action_name, 1, True), daemon=True).start()
+                threading.Thread(target=AGC.runActionGroup, args=(action_name, 0, True), daemon=True).start()
 
                 aplay_thread = subprocess.Popen(["aplay", "/home/pi/TonyPi/audio/{}.wav".format(action_name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 status = 'play'
@@ -223,7 +223,7 @@ while True:
                     asyncio.run(run_action_set(actName, 1))
                     th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                     th.start()
-            last_buttons = buttons
+            # last_buttons = buttons
         except Exception as e:
             print(e)
             connected = False          
