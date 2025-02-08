@@ -1,0 +1,133 @@
+# 扩展板示例 控制总线舵机转动
+python3 /home/pi/board_demo/bus_servo_turn.py
+
+# 扩展板示例 读取总线舵机状态
+python3 /home/pi/board_demo/bus_servos_read.py
+
+# 扩展板示例 控制数字舵机转动
+python3 /home/pi/board_demo/pwm_servo_control_demo.py
+
+# 扩展板示例 控制蜂鸣器
+python3 /home/pi/board_demo/buzzer_control_demo.py
+
+# 扩展板示例 语音识别
+python3 /home/pi/board_demo/board_asr_demo.py
+
+# 扩展板示例 语音合成
+python3 /home/pi/board_demo/board_tts_demo.py
+
+# 扩展板示例 加速度传感器使用
+# imu例程使用前需要输入sudo systemctl stop tonypi.service关闭自启服务
+# 使用完成之后需要输入sudo systemctl start tonypi.service重新开启自启服务
+python3 /home/pi/board_demo/board_imu_demo.py
+
+# 动作组执行示例
+python3 /home/pi/TonyPi/Example/ActionGroupControlDemo.py
+
+# AI视觉 自动踢球
+python3 /home/pi/TonyPi/Functions/KickBall.py
+
+# AI视觉 颜色识别
+python3 /home/pi/TonyPi/Functions/ColorDetect.py
+
+# AI视觉 智能巡线
+python3 /home/pi/TonyPi/Functions/VisualPatrol.py
+
+# AI视觉 颜色追踪
+python3 /home/pi/TonyPi/Functions/ColorTrack.py
+
+# AI视觉 人脸识别
+python3 /home/pi/TonyPi/Functions/FaceDetect.py
+
+# AI视觉 标签识别
+python3 /home/pi/TonyPi/Functions/ApriltagDetect.py
+
+# 拓展课程之语音交互及智能搬运 语音控制TonyPi
+#python3 /home/pi/TonyPi/Functions/ASRControl.py
+
+# 拓展课程之语音交互及智能搬运 颜色识别播放
+#python3 /home/pi/TonyPi/Functions/ColorDetectAndTTS.py
+
+# 拓展课程之语音交互及智能搬运 智能搬运
+#python3 /home/pi/TonyPi/Functions/Transport.py
+
+# 拓展课程之语音交互及智能搬运 语音控制搬运
+#python3 /home/pi/TonyPi/Functions/Transport_ASR.py
+
+# 拓展课程之语音交互及智能搬运 物体追踪
+python3 /home/pi/TonyPi/Functions/Follow.py
+
+# 拓展课程之机器人视觉应用课程 跌倒起立
+python3 /home/pi/TonyPi/Functions/Fall_and_Stand.py
+
+# 拓展课程之机器人视觉应用课程 用OpenCV识别颜色
+python3 /home/pi/TonyPi/Functions/Color_Recognize.py
+
+# 拓展课程之机器人视觉应用课程 做个颜色识别的警报器
+python3 /home/pi/TonyPi/Functions/Color_Warning.py
+
+# 拓展课程之机器人视觉应用课程 用树莓派控制云台转动
+python3 /home/pi/TonyPi/Functions/Head_Control.py
+
+# 拓展课程之机器人视觉应用课程 如何检测AprilTag标签
+python3 /home/pi/TonyPi/Functions/Tag_Detect.py
+
+# 拓展课程之机器人视觉应用课程 如何检测到人脸
+python3 /home/pi/TonyPi/Functions/Face_Detect.py
+
+# 拓展课程之传感器基础开发课程 风扇模块实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/fan_control.py
+
+# 拓展课程之传感器基础开发课程 触摸传感器实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/touch_buzzer.py
+
+# 拓展课程之传感器基础开发课程 MP3模块实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/mp3_play.py
+
+# 拓展课程之传感器基础开发课程 超声波传感器实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/sonar_rgbd.py
+
+# 拓展课程之传感器基础开发课程 点阵模块实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/lattice_display.py
+
+# 拓展课程之传感器基础开发课程 光线传感器实验
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_example/photo_sensitive_control.py
+
+# 拓展课程之传感器应用开发课程  人脸追踪风扇
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/face_track_and_fan.py
+
+# 拓展课程之传感器应用开发课程  能歌善舞
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/touch_color_and_mp3.py
+
+# 拓展课程之传感器应用开发课程  躲避障碍
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/sonar_barrier.py 
+
+# 拓展课程之传感器应用开发课程  形状识别
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/shape_recognition.py 
+
+# 拓展课程之传感器应用开发课程  智能补光
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/photo_sensor_demo.py
+
+# 拓展课程之传感器应用开发课程  口罩识别
+python3 /home/pi/TonyPi/Extend/sensor_course/sensor_development/mask_detect.py
+
+# 拓展课程之田径运动课程   爬台阶
+python3 /home/pi/TonyPi/Extend/athletics_course/stairway.py
+
+# 拓展课程之田径运动课程   跨栏运动
+python3 /home/pi/TonyPi/Extend/athletics_course/hurdles.py
+
+# 拓展课程之田径运动课程   田径运动
+python3 /home/pi/TonyPi/Extend/athletics_course/athletics_perform.py
+
+# 拓展课程之视觉抓取课程   色块分拣
+python3 /home/pi/TonyPi/Extend/vision_grab_course/color_classify.py
+
+# 拓展课程之视觉抓取课程   Apriltag追踪投放
+python3 /home/pi/TonyPi/Extend/vision_grab_course/apriltag_track.py
+
+# 拓展课程之视觉抓取课程   TonyPi Pro语音控制抓取
+python3 /home/pi/TonyPi/Extend/vision_grab_course/asr_color_detect.py
+
+
+
