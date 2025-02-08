@@ -65,28 +65,29 @@ if __name__ == '__main__':
         try:
             res = wonderecho.detect()
             if res != b'':
-                if cmd_dict[res] == 'wakeup':
-                    speech.play_audio(os.path.join(audio_path, 'wakeup.wav'), volume=70)
-                    print('wakeup')
-                elif cmd_dict[res] == 'sleep':
-                    speech.play_audio(os.path.join(audio_path, 'dong.wav'), volume=70) 
-                    print('sleep')
-                elif cmd_dict[res] == 'forward':
-                    speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
-                    AGC.runActionGroup('go_forward', 2 , True)
-                    print('forward')
-                elif cmd_dict[res] == 'back':
-                    speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
-                    AGC.runActionGroup('back', 2 , True)
-                    print('back')
-                elif cmd_dict[res] == 'turn_left':
-                    speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
-                    AGC.runActionGroup('turn_left', 2 , True)
-                    print('turn_left')
-                elif cmd_dict[res] == 'turn_right':
-                    speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
-                    AGC.runActionGroup('turn_right', 2 , True)
-                    print('turn_right')
+                if res in cmd_dict:
+                    if cmd_dict[res] == 'wakeup':
+                        speech.play_audio(os.path.join(audio_path, 'wakeup.wav'), volume=70)
+                        print('wakeup')
+                    elif cmd_dict[res] == 'sleep':
+                        speech.play_audio(os.path.join(audio_path, 'dong.wav'), volume=70) 
+                        print('sleep')
+                    elif cmd_dict[res] == 'forward':
+                        speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
+                        AGC.runActionGroup('go_forward', 2 , True)
+                        print('forward')
+                    elif cmd_dict[res] == 'back':
+                        speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
+                        AGC.runActionGroup('back', 2 , True)
+                        print('back')
+                    elif cmd_dict[res] == 'turn_left':
+                        speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
+                        AGC.runActionGroup('turn_left', 2 , True)
+                        print('turn_left')
+                    elif cmd_dict[res] == 'turn_right':
+                        speech.play_audio(os.path.join(audio_path, 'ok.wav'), volume=70)
+                        AGC.runActionGroup('turn_right', 2 , True)
+                        print('turn_right')
         except KeyboardInterrupt:
             wonderecho.exit()
             break

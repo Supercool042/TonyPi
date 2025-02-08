@@ -232,23 +232,31 @@ def action_thread():
             left_and_right = sum(left_and_right)
             up_and_down = sum(up_and_down)
             points = np.array(points)
-
+            
             line = cv2.fitLine(points, cv2.DIST_L2, 0, 0.01, 0.01)
+            vx, vy, x0, y0 = line.flatten()  
+            projections = (points[:, 0] - x0) * vx + (points[:, 1] - y0) * vy
+
+            t_min = projections.min()
+            t_max = projections.max()
+
+            line_segment_length = t_max - t_min
             angle = int(abs(math.degrees(math.acos(line[0][0]))))
+            step = round(line_segment_length/70)
             print('>>>>>>', angle)
             if 90 >= angle > 60:
                 if up_and_down > 0:
-                    AGC.runActionGroup('back_fast')
+                    AGC.runActionGroup('back_fast', step, True)
                     print('down')
                 else:
-                    AGC.runActionGroup('go_forward')
+                    AGC.runActionGroup('go_forward', step, True)
                     print('up')
             elif 30 > angle >= 0:
                 if left_and_right > 0:
-                    AGC.runActionGroup('left_move')
+                    AGC.runActionGroup('left_move', step, True)
                     print('right')
                 else:
-                    AGC.runActionGroup('right_move')
+                    AGC.runActionGroup('right_move', step, True)
                     print('left')
             start_move = False
         else:

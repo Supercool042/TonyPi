@@ -7,8 +7,8 @@ import json
 import pygame
 import asyncio
 import threading
-import subprocess
 import websockets
+import subprocess
 import hiwonder.ActionGroupControl as AGC
 import hiwonder.ros_robot_controller_sdk as rrc
 
@@ -216,17 +216,18 @@ while True:
                     board.set_buzzer(1900, 0.1, 0.9, 1) # 以1900Hz的频率，持续响0.1秒，关闭0.9秒，重复1次(at a frequency of 1900Hz, beep for 0.1 seconds, then silence for 0.9 seconds, repeating once)
             if action_name is not None:
                 threading.Thread(target=AGC.runActionGroup, args=(action_name, 1, True), daemon=True).start()
+
                 aplay_thread = subprocess.Popen(["aplay", "/home/pi/TonyPi/audio/{}.wav".format(action_name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 status = 'play'
                 action_name = None
             if th is not None:
                 if actName is not None:
                     if not th.is_alive():
-                        # asyncio.run(run_action_set(actName, 1))
+                        asyncio.run(run_action_set(actName, 1))
                         th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                         th.start()
             else:
-                # asyncio.run(run_action_set(actName, 1))
+                asyncio.run(run_action_set(actName, 1))
                 th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                 th.start()
             last_buttons = buttons

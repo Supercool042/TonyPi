@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export VERSION="|V1.0|2025-02-08|"
+export MACHINE_TYPE=TonyPiPro
+echo -e "MACHINE: \033[32m$MACHINE_TYPE\033[0m"
+echo -e "VERSION: \033[32m$VERSION\033[0m"

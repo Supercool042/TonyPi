@@ -533,15 +533,16 @@ def run(img):
         return img
     
     data = wonderecho.detect()
-    if cmd_dict[data] == 'transport_red':
-       object_color = 'red'
-       speech.play_audio(os.path.join(audio_path, 'transport_red.wav'), volume=70)
-    elif cmd_dict[data] == 'transport_green':
-        object_color = 'green'
-        speech.play_audio(os.path.join(audio_path, 'transport_green.wav'), volume=70)
-    elif cmd_dict[data] == 'transport_blue':
-        object_color = 'blue'
-        speech.play_audio(os.path.join(audio_path, 'transport_blue.wav'), volume=70)
+    if data in cmd_dict:
+        if cmd_dict[data] == 'transport_red':
+           object_color = 'red'
+           speech.play_audio(os.path.join(audio_path, 'transport_red.wav'), volume=70)
+        elif cmd_dict[data] == 'transport_green':
+            object_color = 'green'
+            speech.play_audio(os.path.join(audio_path, 'transport_green.wav'), volume=70)
+        elif cmd_dict[data] == 'transport_blue':
+            object_color = 'blue'
+            speech.play_audio(os.path.join(audio_path, 'transport_blue.wav'), volume=70)
     
     if object_color is None:
         object_center_x = -4
