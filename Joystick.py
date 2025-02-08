@@ -177,32 +177,25 @@ while True:
                     actName = 'right_move' 
                     # print("right_move") 
                 else:
-                    if (last_status == 'go' or last_status == 'back') and actName is None:
-                        AGC.stopActionGroup()
-                        last_status = '' 
-                 
-                lx = js.get_axis(0)
-                ly = js.get_axis(1)
-                
-                if lx < -0.5 :
-                    actName = 'left_move'
-                elif lx > 0.5:
-                    actName = 'right_move'
-                l3_state = js.get_button(key_map["PSB_L3"])
-                if ly < -0.5 :
-                    if not l3_state:
+                    lx = js.get_axis(0)
+                    ly = js.get_axis(1)
+                    
+                    if lx < -0.5 :
+                        actName = 'left_move'
+                    elif lx > 0.5:
+                        actName = 'right_move'
+                    if ly < -0.5 :
                         last_status = 'go'
                         actName = 'go_forward'
                         times = 0
-                elif ly > 0.5:
-                    if not l3_state:
-                        last_status = 'back'
+                    elif ly > 0.5:
+                        last_status = 'bacactName, times'
                         actName = 'back_fast'
                         times = 0
-                else:
-                    if (last_status == 'go' or last_status == 'back') and actName is None:
-                        AGC.stopActionGroup()
-                        last_status = ''
+                    else:
+                        if (last_status == 'go' or last_status == 'back') and actName is None:
+                            AGC.stopActionGroup()
+                            last_status = ''
                 if js.get_button(key_map["PSB_START"]):
                     if status == 'play':
                         AGC.stopAction()
@@ -220,16 +213,16 @@ while True:
                 aplay_thread = subprocess.Popen(["aplay", "/home/pi/TonyPi/audio/{}.wav".format(action_name)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 status = 'play'
                 action_name = None
-            if th is not None:
-                if actName is not None:
+            if actName is not None:
+                if th is not None:
                     if not th.is_alive():
                         asyncio.run(run_action_set(actName, 1))
                         th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
                         th.start()
-            else:
-                asyncio.run(run_action_set(actName, 1))
-                th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
-                th.start()
+                else:
+                    asyncio.run(run_action_set(actName, 1))
+                    th = threading.Thread(target=AGC.runActionGroup, args=(actName, times), daemon=True)
+                    th.start()
             last_buttons = buttons
         except Exception as e:
             print(e)
