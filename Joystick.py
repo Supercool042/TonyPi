@@ -166,7 +166,7 @@ while True:
                     # print("go_forward")
                     times = 0
                 elif js.get_hat(0)[0] == 0  and  js.get_hat(0)[1] == -1:
-                    last_status = 'back'
+                    last_status = 'back_fast'
                     actName = 'back_fast'
                     # print("back_fast")
                     times = 0
@@ -189,11 +189,11 @@ while True:
                         actName = 'go_forward'
                         times = 0
                     elif ly > 0.5:
-                        last_status = 'bacactName, times'
+                        last_status = 'back_fast'
                         actName = 'back_fast'
                         times = 0
                     else:
-                        if (last_status == 'go' or last_status == 'back') and actName is None:
+                        if (last_status == 'go' or last_status == 'back_fast') and actName is None:
                             AGC.stopActionGroup()
                             last_status = ''
                 if js.get_button(key_map["PSB_START"]):
