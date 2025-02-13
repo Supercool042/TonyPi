@@ -2,6 +2,7 @@
 # encoding: utf-8
 # @Author: Aiden
 # @Date: 2024/09/21
+import time
 import smbus
 
 class AHT10:
@@ -28,4 +29,4 @@ class AHT10:
 aht10 = AHT10()
 
 while True:
-    print(int(aht10.getData()[0]))
+    print(aht10.getData())

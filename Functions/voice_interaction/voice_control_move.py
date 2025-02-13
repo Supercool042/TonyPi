@@ -19,7 +19,7 @@ import hiwonder.ros_robot_controller_sdk as rrc
 '''
 
 # 添加当前脚本所在目录的上一级目录的绝对路径(add the absolute path of the parent directory of the directory where the current script is located)
-last_dir_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+last_dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(last_dir_path)
 from ActionGroupDict import action_group_dict
 

@@ -298,7 +298,7 @@ def apriltagDetect(img):
                 elif tag_id == '3':
                     tag_3 = [object_center_x, object_center_y, object_angle]
         
-    return tag_1, tag_2, tag_o
+    return tag_1, tag_2, tag_3
 
 # 通过其他apriltag判断目标apriltag位置(determine the position of the target apriltag using Other apriltags)
 # apriltag摆放位置：红(tag36h11_1)，绿(tag36h11_2)，蓝(tag36h11_3)(apriltag placement: red(tag36h_11_1), green(tag36h11_2), blue(tag36h11_3))

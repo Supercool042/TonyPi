@@ -48,12 +48,16 @@ def set_fan(start):
 
 count = 0
 while True:
-    t = int(aht10.getData()[0])
-    if t > 30:
-        count += 1
-        if count > 5:
-            set_fan(1)
+    try:
+        t = int(aht10.getData()[0])
+        if t > 30:
+            count += 1
+            if count > 5:
+                set_fan(1)
+                count = 0
+        else:
             count = 0
-    else:
-        count = 0
+            set_fan(0)
+    except KeyboardInterrupt:
         set_fan(0)
+        break
