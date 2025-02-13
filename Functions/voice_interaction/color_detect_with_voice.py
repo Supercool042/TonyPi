@@ -240,6 +240,7 @@ def run(img):
     return img
 
 if __name__ == '__main__':
+    sys.path.append("/home/pi/TonyPi/Functions")
     from CameraCalibration.CalibrationConfig import *
     
     #加载参数(load parameters)

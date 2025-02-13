@@ -7,7 +7,7 @@ import time
 import math
 import threading
 import numpy as np
-
+import serial
 from speech import speech
 import hiwonder.apriltag as apriltag
 import hiwonder.Camera as Camera
@@ -30,6 +30,7 @@ import hiwonder.yaml_handle as yaml_handle
 
 
 if __name__ == '__main__':
+    sys.path.append("/home/pi/TonyPi/Functions")
     from CameraCalibration.CalibrationConfig import *
 else:
     from Functions.CameraCalibration.CalibrationConfig import *
@@ -38,7 +39,7 @@ else:
 if sys.version_info.major == 2:
     print('Please run this program with python3!')
     sys.exit(0)
-
+audio_path = os.path.join(os.path.abspath(os.path.join(os.path.split(os.path.realpath(__file__))[0], 'audio'))) 
 #加载参数(load parameters)
 param_data = np.load(calibration_param_path + '.npz')
 
